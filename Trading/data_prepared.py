@@ -254,5 +254,5 @@ class data_prepared:
 
 if __name__ == '__main__':
     #print(gt.crossSection_index_return_withdraw('中证A500', '2025-06-11'))
-    dp=data_prepared('2025-07-07',realtime=False)
+    dp=data_prepared('2025-09-05',realtime=False)
     dp.productTargetWeight_withdraw('SGS958')

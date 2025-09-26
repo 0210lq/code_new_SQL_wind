@@ -29,7 +29,7 @@ class time_tools:
         critical_time = critical_time.strftime("%H:%M")
         if gt.is_workday_auto() == True:
             today = date.today()
-            today = date(2025, 8, 4)
+            # today = date(2025, 8, 4)
             next_day = gt.next_workday_calculate(today)
             time_now = datetime.datetime.now().strftime("%H:%M")
             if time_now >= critical_time:
@@ -49,7 +49,7 @@ class time_tools:
         critical_time = critical_time.strftime("%H:%M")
         if gt.is_workday_auto() == True:
             today = date.today()
-            today = date(2025, 8, 4)
+            # today = date(2025, 8, 4)
             last_day = gt.last_workday_calculate(today)
             time_now = datetime.datetime.now().strftime("%H:%M")
             if time_now >= critical_time:
@@ -68,7 +68,7 @@ class time_tools:
         critical_time = critical_time.strftime("%H:%M")
         if gt.is_workday_auto() == True:
             today = date.today()
-            today = date(2025, 8, 4)
+            # today = date(2025, 8, 4)
             last_day = gt.last_workday_calculate(today)
             time_now = datetime.datetime.now().strftime("%H:%M")
             if time_now >= critical_time:

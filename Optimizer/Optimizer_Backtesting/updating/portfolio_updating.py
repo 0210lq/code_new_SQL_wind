@@ -65,7 +65,7 @@ def target_date_decision():
     logger.info("Deciding target date...")
     if gt.is_workday_auto() == True:
         today = date.today()
-        today = date(2025, 7, 31)
+        # today = date(2025, 7, 31)
         next_day = gt.next_workday_calculate(today)
         critical_time = '20:00'
         # time_now = datetime.datetime.now().strftime("%H:%M")

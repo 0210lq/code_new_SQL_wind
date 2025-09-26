@@ -42,7 +42,7 @@ def FactorData_update_main(is_sql=True):
     # 回滚
     start_date = date
     for i in range(3):
-            start_date = gt.last_workday_calculate(start_date)
+        start_date = gt.last_workday_calculate(start_date)
     fu = FactorData_update(start_date, date,is_sql)
     fu.FactorData_update_main()
 def L4Data_update_main(is_sql=True):

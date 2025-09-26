@@ -70,7 +70,7 @@ def score_name_withdraw():
 def target_date_decision():
     if gt.is_workday_auto() == True:
         today = date.today()
-        today = date(2025, 7, 31)
+        # today = date(2025, 7, 31)
         today=gt.strdate_transfer(today)
         next_day = gt.next_workday_calculate(today)
         critical_time = '19:30'

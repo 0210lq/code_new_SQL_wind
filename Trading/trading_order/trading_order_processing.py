@@ -53,7 +53,7 @@ def target_date_decision():
     """
     if gt.is_workday_auto() == True:
         today = date.today()
-        today = date(2025,8,14)
+        # today = date(2025,8,14)
         next_day = gt.next_workday_calculate(today)
         critical_time = '20:00'
         time_now = datetime.datetime.now().strftime("%H:%M")

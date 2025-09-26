@@ -140,8 +140,8 @@ class FactorData_update:
             gt.folder_creator2(outputpath_factor_index1_base)
             input_list=os.listdir(outputpath_factor_index1_base)
             if len(input_list)==0:
-                if self.start_date > '2023-06-01':
-                    start_date = '2023-06-01'
+                if self.start_date > '2025-02-28':
+                    start_date = '2025-02-28'
                 else:
                     start_date = self.start_date
             else:
@@ -157,9 +157,8 @@ class FactorData_update:
                 for source_name in source_name_list:
                     outputpath_factor_index1 = os.path.join(outputpath_factor_index1_base,
                                                             str(index_short) + 'IndexExposure_' + available_date + '.csv')
-                    if source_name == 'jy':
-                        df_index_exposure = fc.jy_factor_index_exposure_update(index_type)
-                    elif source_name == 'wind':
+
+                    if source_name == 'wind':
                         df_index_exposure = fc.wind_factor_index_exposure_update(index_type)
                     else:
                         raise ValueError
@@ -177,98 +176,7 @@ class FactorData_update:
                 else:
                     self.logger.warning(f'{index_type}index_factor在{available_date}数据存在缺失')
 
-    def index_ygFactor_exposure_update(self, available_date,index_type):
-        dic_index = self.index_dic_processing()
-        index_name=dic_index[index_type]
-        available_date2=gt.intdate_transfer(available_date)
-        if available_date2 <= '20200531':
-            inputpath_factor = glv.get('input_factor_jy_old')
-            type='old'
-        else:
-            inputpath_factor = glv.get('input_factor_jy')
-        inputpath_factor = os.path.join(inputpath_factor, 'LNMODELACTIVE-' + str(available_date2) + '.mat')
-        fp=FactorData_prepare(available_date)
-        try:
-            if type!='old':
-               df_factor_exposure = fp.jy_factor_exposure_update()
-            else:
-                df_factor_exposure = fp.jy_factor_exposure_update_old()
-            barra_name, industry_name = gt.factor_name(inputpath_factor)
-            status = 1
-        except:
-            status = 0
-        if status == 1:
-            df_factor_exposure=fp.stock_pool_processing(df_factor_exposure)
-            df_component = gt.index_weight_withdraw(index_type,available_date)
-            df_component.dropna(subset=['weight'], inplace=True)
-            index_code_list = df_component['code'].tolist()
-            df_stockuniverse=pd.DataFrame()
-            df_stockuniverse['code']=df_factor_exposure['code'].tolist()
-            slice_df_stock_universe = df_stockuniverse[df_stockuniverse['code'].isin(index_code_list)]
-            slice_df_stock_universe.reset_index(inplace=True)
-            slice_df_stock_universe = slice_df_stock_universe.merge(df_component, on='code', how='left')
-            index_code_list_index = slice_df_stock_universe['index'].tolist()
-            slice_df = df_factor_exposure.dropna(subset=barra_name[-2:])
-            index_list = slice_df.index
-            df_barra = df_factor_exposure.iloc[index_list][barra_name[1:]]
-            df_industry = df_factor_exposure.iloc[index_list][industry_name]
-            df_industry.fillna(0, inplace=True)
-            df_barra.fillna(0, inplace=True)
-            df_final = pd.concat([df_barra, df_industry], axis=1)
-            df_final.reset_index(inplace=True)
-            df_final = df_final[df_final['index'].isin(index_code_list_index)]
-            slice_df_stock_universe = slice_df_stock_universe[slice_df_stock_universe['index'].isin(index_list)]
-            slice_df_stock_universe['weight']=slice_df_stock_universe['weight'].astype(float)/slice_df_stock_universe['weight'].astype(float).sum()
-            weight = slice_df_stock_universe['weight'].astype(float).tolist()
-            df_final.drop(columns='index', inplace=True)
-            index_factor_exposure = list(
-                np.array(np.dot(np.mat(df_final.values).T, np.mat(weight).T)).flatten())
-            index_factor_exposure = [index_factor_exposure]
-            df_final = pd.DataFrame(np.array(index_factor_exposure), columns=barra_name[1:] + industry_name)
-            df_final['valuation_date'] = available_date
-            df_final = df_final[barra_name[-2:]]
-            df_final=df_final.T
-            df_final.reset_index(inplace=True)
-            df_final.columns=['type','value']
-            df_final['organization']=index_name
-        else:
-            df_final = pd.DataFrame()
-        return df_final
 
-    def index_ygFactor_exposure_update_main(self):
-        self.logger.info('\nProcessing index_ygFactor_exposure_update_main...')
-        outputpath=glv.get('output_indexexposure_yg')
-        gt.folder_creator2(outputpath)
-        inputlist=os.listdir(outputpath)
-        if len(inputlist)==0 and self.start_date>'2024-07-05':
-            start_date='2024-07-05'
-        else:
-            start_date=self.start_date
-        working_days_list=gt.working_days_list(start_date,self.end_date)
-        if self.is_sql == True:
-            inputpath_configsql = glv.get('config_sql')
-            sm=gt.sqlSaving_main(inputpath_configsql,'Indexygfactorexposure')
-        for available_date in working_days_list:
-            self.logger.info(f'\nProcessing date: {available_date}')
-            available_date2=gt.intdate_transfer(available_date)
-            outputpath_daily=os.path.join(outputpath,'index_ygFactorExposure_'+available_date2+'.csv')
-            df_final=pd.DataFrame()
-            for index_type in [ '沪深300', '中证1000','国证2000']:
-                self.logger.info(f'Processing index type: {index_type}')
-                df_exposure=self.index_ygFactor_exposure_update(available_date,index_type)
-                df_final=pd.concat([df_final,df_exposure])
-            if df_final.empty:
-                self.logger.warning(f'index_yg_indexexposure{available_date}更新有问题')
-            else:
-                if df_final.isna().any().any():
-                    self.logger.warning(f'index_yg_indexexposure{available_date}更新有问题')
-                else:
-                    df_final['valuation_date'] = available_date
-                    df_final = df_final[['valuation_date'] + df_final.columns.tolist()[:-1]]
-                    df_final.to_csv(outputpath_daily, index=False)
-                    self.logger.info(f'Successfully saved yg factor exposure data for date: {available_date}')
-                    if self.is_sql==True:
-                        capture_file_withdraw_output(sm.df_to_sql, df_final)
 
 
     def FactorData_update_main(self):
@@ -281,7 +189,7 @@ def FactorData_history_main(start_date,end_date,is_sql):
     fu=FactorData_update(start_date,end_date,is_sql)
     fu.FactorData_update_main()
 if __name__ == '__main__':
-    FactorData_history_main('2020-01-01','2025-07-14',True)
+    FactorData_history_main('2025-08-03','2025-09-04',True)
 
 
 
